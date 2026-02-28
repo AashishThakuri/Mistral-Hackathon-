@@ -78,7 +78,7 @@ function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="absolute top-[50%] lg:top-[50%] left-[8%] lg:left-[8.1%] w-[80%] md:w-[35%] lg:w-[37.6%] min-h-[260px] md:min-h-[300px] lg:min-h-[365px] p-6 lg:p-10 pointer-events-auto bg-[#c9c6b9]/90 border border-[#b8b5a8] shadow-sm rounded-sm flex flex-col justify-center"
+            className="absolute top-[55%] lg:top-[58%] left-[8%] lg:left-[7.5%] w-[80%] md:w-[35%] lg:w-[38%] min-h-[160px] md:min-h-[200px] lg:min-h-[280px] p-6 lg:p-8 pointer-events-auto bg-[#c9c6b9]/90 border border-[#b8b5a8] shadow-sm rounded-sm flex flex-col justify-center"
           >
             <h2 className="text-xl md:text-2xl text-neutral-900 font-serif leading-tight mb-4 tracking-tight">
               Strata transforms complex tenders into clear, actionable bid intelligence.
