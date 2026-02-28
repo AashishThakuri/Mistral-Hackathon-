@@ -61,15 +61,14 @@ function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="absolute top-[20%] left-[8%] md:left-[10%] max-w-2xl lg:max-w-3xl pointer-events-auto"
+            className="absolute top-[20%] left-[5%] md:left-[7%] max-w-2xl lg:max-w-3xl pointer-events-auto"
           >
             <h1
-              style={{ fontFamily: "'Abel', sans-serif" }}
+              style={{ fontFamily: "'Alegreya SC', sans-serif" }}
               className="text-4xl sm:text-5xl md:text-[5rem] text-black leading-[1.1] tracking-tight"
             >
-              Win with <span className="bg-[#8DE1DD] px-2 font-medium">clarity,</span><br />
-              not document <br className="hidden md:block" />
-              chaos.
+              Win with <span className="bg-[#8DE1DD] px-2 py-0.5 font-medium inline-block leading-[1.15]">clarity,</span> not<br />
+              document chaos.
             </h1>
           </motion.div>
 
@@ -80,13 +79,27 @@ function App() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="absolute top-[55%] lg:top-[58%] left-[8%] lg:left-[7.5%] w-[80%] md:w-[35%] lg:w-[38%] min-h-[160px] md:min-h-[200px] lg:min-h-[280px] p-6 lg:p-8 pointer-events-auto bg-[#c9c6b9]/90 border border-[#b8b5a8] shadow-sm rounded-sm flex flex-col justify-center"
           >
-            <h2 className="text-xl md:text-2xl text-neutral-900 font-serif leading-tight mb-4 tracking-tight">
+            <h2 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-xl md:text-2xl text-neutral-900 leading-tight mb-4 tracking-tight">
               Strata transforms complex tenders into clear, actionable bid intelligence.
             </h2>
-            <p className="text-base md:text-lg text-neutral-800 leading-relaxed font-sans mt-2">
+            <p style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-base md:text-lg text-neutral-800 leading-relaxed mt-2">
               Upload a tender to uncover hidden requirements, missing documents, compliance risks, evaluation criteria, and the exact next steps needed to prepare a stronger submission.
             </p>
           </motion.div>
+        </div>
+
+        {/* Triangle Grid Behind Cubes */}
+        <div className="absolute right-0 bottom-0 w-[55%] lg:w-[52%] h-[65%] lg:h-[72%] z-[5] pointer-events-none overflow-hidden">
+          <svg width="100%" height="100%" viewBox="0 0 400 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Horizontal grid lines - only inside triangle */}
+            {[40, 80, 120, 160, 200, 240, 280, 320, 360, 400].map((y) => (
+              <line key={`h-${y}`} x1={400 - y} y1={y} x2="400" y2={y} stroke="#a8a498" strokeWidth="0.5" opacity="0.35" />
+            ))}
+            {/* Vertical grid lines - only inside triangle */}
+            {[0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400].map((x) => (
+              <line key={`v-${x}`} x1={x} y1={400 - x} x2={x} y2="400" stroke="#a8a498" strokeWidth="0.5" opacity="0.35" />
+            ))}
+          </svg>
         </div>
 
       </motion.div>
