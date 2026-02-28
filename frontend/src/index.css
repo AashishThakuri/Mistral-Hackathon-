@@ -1,5 +1,125 @@
 @import "tailwindcss";
 
+/* Staircase Preloader */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  pointer-events: none;
+}
+
+.preloader-col {
+  flex: 1;
+  background: #000;
+  transform-origin: top;
+}
+
+.preloader-col:nth-child(1) {
+  animation: stairSlide 0.5s 1.0s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(2) {
+  animation: stairSlide 0.5s 1.08s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(3) {
+  animation: stairSlide 0.5s 1.16s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(4) {
+  animation: stairSlide 0.5s 1.24s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(5) {
+  animation: stairSlide 0.5s 1.32s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(6) {
+  animation: stairSlide 0.5s 1.40s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+.preloader-col:nth-child(7) {
+  animation: stairSlide 0.5s 1.48s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+
+.preloader-center-text {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  color: #555;
+  font-family: 'Alegreya SC', sans-serif;
+  font-size: 3rem;
+  letter-spacing: 0.15em;
+  opacity: 0;
+  text-shadow: none;
+  animation: textFadeIn 0.4s 0.1s ease forwards, textFadeOut 0.3s 0.7s ease forwards;
+}
+
+@keyframes stairSlide {
+  0% {
+    transform: scaleY(1);
+  }
+
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes textFadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+}
+
 @theme {
   --font-family-sans: "Inter", "system-ui", "sans-serif";
+}
+
+/* Navbar shine sweep effect */
+.nav-shine {
+  position: relative;
+  overflow: hidden;
+  color: #000;
+}
+
+.nav-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%);
+  transition: left 0s;
+  pointer-events: none;
+}
+
+.nav-shine:hover::after {
+  left: 120%;
+  transition: left 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }

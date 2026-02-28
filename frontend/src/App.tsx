@@ -1,8 +1,29 @@
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 function App() {
+  const [showPreloader, setShowPreloader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPreloader(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black p-1 flex flex-col">
+      {/* Staircase Preloader */}
+      {showPreloader && (
+        <>
+          <div className="preloader">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="preloader-col" />
+            ))}
+          </div>
+          <div className="preloader-center-text">Strata</div>
+        </>
+      )}
       {/* Main Container with Rounded Corners */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -18,7 +39,7 @@ function App() {
         />
 
         {/* Navbar */}
-        <nav className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start pl-4 pr-16 py-4 md:pl-8 md:pr-24 md:py-5 pointer-events-auto">
+        <nav className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start pl-4 pr-4 py-4 md:pl-8 md:pr-52 md:py-5 pointer-events-auto">
           {/* Logo */}
           <div className="flex items-center gap-1">
             <img src="/logo.png" alt="Strata Logo" className="h-16 w-auto object-contain -ml-2" />
@@ -28,23 +49,23 @@ function App() {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-3">
-            <button className="px-5 py-2 rounded-full border border-neutral-400/60 text-sm font-medium text-black bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
+          <div className="hidden md:flex items-center gap-4">
+            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
               Home
             </button>
-            <button className="px-5 py-2 rounded-full border border-neutral-400/60 text-sm font-medium text-black bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
+            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
               About
             </button>
-            <button className="px-5 py-2 rounded-full border border-neutral-400/60 text-sm font-medium text-black bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
+            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
               How It Works
             </button>
-            <button className="px-5 py-2 rounded-full border border-neutral-400/60 text-sm font-medium text-black bg-transparent hover:bg-black/5 transition-colors cursor-pointer flex items-center gap-2">
+            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer flex items-center gap-2">
               Resources
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
-            <button className="px-5 py-2 rounded-full text-sm font-medium text-white bg-black hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-2">
+            <button className="px-5 py-2 rounded-lg text-sm font-medium text-white bg-black hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-2">
               More
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
@@ -61,7 +82,7 @@ function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="absolute top-[20%] left-[5%] md:left-[7%] max-w-2xl lg:max-w-3xl pointer-events-auto"
+            className="absolute top-[23%] left-[5%] md:left-[7%] max-w-2xl lg:max-w-3xl pointer-events-auto"
           >
             <h1
               style={{ fontFamily: "'Alegreya SC', sans-serif" }}
