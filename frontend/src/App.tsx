@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import UploadTender from "./UploadTender";
 
 function App() {
   const [showPreloader, setShowPreloader] = useState(true);
+  const [currentPage, setCurrentPage] = useState<"landing" | "upload">("landing");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -10,6 +12,10 @@ function App() {
     }, 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  if (currentPage === "upload") {
+    return <UploadTender onBack={() => setCurrentPage("landing")} />;
+  }
 
   return (
     <div className="min-h-screen bg-black p-1 flex flex-col">
@@ -59,7 +65,7 @@ function App() {
             <button className="nav-box-hover">
               Sample Analysis
             </button>
-            <button className="nav-box-hover flex items-center justify-center gap-2">
+            <button className="nav-box-hover flex items-center justify-center gap-2" onClick={() => setCurrentPage("upload")}>
               Upload Tender
             </button>
           </div>
