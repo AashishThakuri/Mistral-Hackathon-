@@ -28,7 +28,7 @@ function App() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, ease: "easeOut", delay: 1.5 }}
         className="relative flex-1 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-white/10"
       >
         {/* Background Image */}
@@ -39,7 +39,7 @@ function App() {
         />
 
         {/* Navbar */}
-        <nav className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start pl-4 pr-4 py-4 md:pl-8 md:pr-52 md:py-5 pointer-events-auto">
+        <nav className="absolute top-0 left-0 right-0 z-20 flex justify-between items-start pl-4 pr-6 py-4 md:pl-8 md:pr-10 md:py-5 pointer-events-auto">
           {/* Logo */}
           <div className="flex items-center gap-1">
             <img src="/logo.png" alt="Strata Logo" className="h-16 w-auto object-contain -ml-2" />
@@ -49,27 +49,18 @@ function App() {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-4">
-            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
-              Home
+          <div className="hidden md:flex items-center gap-8">
+            <button className="nav-box-hover">
+              Product
             </button>
-            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
-              About
+            <button className="nav-box-hover">
+              How it works
             </button>
-            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer">
-              How It Works
+            <button className="nav-box-hover">
+              Sample Analysis
             </button>
-            <button className="nav-shine px-5 py-2 rounded-lg border border-neutral-400/60 text-sm font-medium bg-transparent hover:bg-black/5 transition-colors cursor-pointer flex items-center gap-2">
-              Resources
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            <button className="px-5 py-2 rounded-lg text-sm font-medium text-white bg-black hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-2">
-              More
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
+            <button className="nav-box-hover flex items-center justify-center gap-2">
+              Upload Tender
             </button>
           </div>
         </nav>
@@ -81,15 +72,16 @@ function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="absolute top-[23%] left-[5%] md:left-[7%] max-w-2xl lg:max-w-3xl pointer-events-auto"
+            transition={{ duration: 0.8, delay: 2.0 }}
+            className="absolute top-[23%] left-[5%] md:left-[7%] max-w-[90%] md:max-w-4xl lg:max-w-5xl pointer-events-auto"
           >
             <h1
               style={{ fontFamily: "'Alegreya SC', sans-serif" }}
-              className="text-4xl sm:text-5xl md:text-[5rem] text-black leading-[1.1] tracking-tight"
+              className="text-4xl sm:text-5xl md:text-[4.5rem] lg:text-[5rem] text-black leading-[1.15] tracking-tight"
             >
-              Win with <span className="bg-[#8DE1DD] px-2 py-0.5 font-medium inline-block leading-[1.15]">clarity,</span> not<br />
-              document chaos.
+              Win with <span className="bg-[#B8C9B9] px-2 py-0.5 font-medium inline-block leading-[1.15]">clarity,</span> not<br />
+              document<br />
+              chaos.
             </h1>
           </motion.div>
 
@@ -97,13 +89,13 @@ function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="absolute top-[55%] lg:top-[58%] left-[8%] lg:left-[7.5%] w-[80%] md:w-[35%] lg:w-[38%] min-h-[160px] md:min-h-[200px] lg:min-h-[280px] p-6 lg:p-8 pointer-events-auto bg-[#c9c6b9]/90 border border-[#b8b5a8] shadow-sm rounded-sm flex flex-col justify-center"
+            transition={{ duration: 0.8, delay: 2.3 }}
+            className="absolute top-[59%] lg:top-[57.5%] left-[8%] lg:left-[7.5%] w-[80%] md:w-[35%] lg:w-[38%] min-h-[160px] md:min-h-[200px] lg:min-h-[280px] p-8 lg:p-10 pointer-events-auto bg-[#c9c6b9]/40 rounded-sm flex flex-col justify-center"
           >
-            <h2 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-xl md:text-2xl text-neutral-900 leading-tight mb-4 tracking-tight">
+            <h2 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-xl md:text-2xl text-neutral-800 leading-relaxed mb-5 tracking-normal font-normal">
               Strata transforms complex tenders into clear, actionable bid intelligence.
             </h2>
-            <p style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-base md:text-lg text-neutral-800 leading-relaxed mt-2">
+            <p style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-base md:text-lg text-neutral-600 leading-loose mt-2">
               Upload a tender to uncover hidden requirements, missing documents, compliance risks, evaluation criteria, and the exact next steps needed to prepare a stronger submission.
             </p>
           </motion.div>

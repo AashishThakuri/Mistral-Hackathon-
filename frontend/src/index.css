@@ -51,7 +51,7 @@
   transform: translate(-50%, -50%);
   z-index: 10000;
   color: #555;
-  font-family: 'Alegreya SC', sans-serif;
+  font-family: 'ADLaM Display', sans-serif;
   font-size: 3rem;
   letter-spacing: 0.15em;
   opacity: 0;
@@ -97,29 +97,72 @@
   --font-family-sans: "Inter", "system-ui", "sans-serif";
 }
 
-/* Navbar shine sweep effect */
-.nav-shine {
+/* Navbar Sweep Animation Box */
+.nav-box-hover {
+  display: inline-flex;
+  transition: all 0.2s ease-in;
   position: relative;
   overflow: hidden;
-  color: #000;
+  z-index: 1;
+  color: #090909;
+  padding: 0.7em 1.7em;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 0.5em;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08), -4px -4px 10px rgba(255, 255, 255, 0.7);
 }
 
-.nav-shine::after {
-  content: '';
+.nav-box-hover:active {
+  color: #666;
+  box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.08), inset -4px -4px 10px rgba(255, 255, 255, 0.7);
+}
+
+.nav-box-hover:before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.5) 50%,
-      transparent 100%);
-  transition: left 0s;
-  pointer-events: none;
+  left: 50%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.25);
+  top: 100%;
+  width: 140%;
+  height: 180%;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
 }
 
-.nav-shine:hover::after {
-  left: 120%;
-  transition: left 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+.nav-box-hover:after {
+  content: "";
+  position: absolute;
+  left: 55%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.45);
+  top: 180%;
+  width: 160%;
+  height: 190%;
+  background-color: #B8C9B9;
+  border-radius: 50%;
+  display: block;
+  transition: all 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+  z-index: -1;
+}
+
+.nav-box-hover:hover {
+  color: #000;
+  border: 1px solid #B8C9B9;
+}
+
+.nav-box-hover:hover:before {
+  top: -35%;
+  background-color: #B8C9B9;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
+.nav-box-hover:hover:after {
+  top: -45%;
+  background-color: #B8C9B9;
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
 }
