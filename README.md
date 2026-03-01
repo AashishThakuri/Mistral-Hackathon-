@@ -5,7 +5,7 @@
   
   <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 30px;">
     <img src="https://img.shields.io/badge/BUILT%20WITH-MISTRAL%20AI-F67A32?style=for-the-badge&labelColor=4D4E50" alt="Built with Mistral AI" />
-    <img src="https://img.shields.io/badge/REACT%20%2B%20NODE-APP-DF5746?style=for-the-badge&labelColor=4D4E50" alt="React + Node Website" />
+     <img src="https://img.shields.io/badge/REACT%20%2B%20NODE-WEBSITE-DF5746?style=for-the-badge&labelColor=4D4E50" alt="React + Node Website" />
   </div>
 
   <img src="frontend/public/logo.png" alt="Strata Logo" width="80" />
