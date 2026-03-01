@@ -112,4 +112,4 @@ npm run dev
 Navigate to `http://localhost:5173` in your browser to access the Strata interface.
 
 ---
-*Developed by Team humanize.*
+*Developed by Team Prophecy.*
