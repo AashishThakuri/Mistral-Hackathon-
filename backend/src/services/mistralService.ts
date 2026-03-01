@@ -117,16 +117,16 @@ export async function streamTenderAnalysis(tenderText: string, res: any) {
                     content: `You are an expert strict tender analyst evaluating a live document.
 First, output a detailed, streaming "thought process" as you analyze the document. Explain what clauses you are finding, what they mean, and any risks or missing criteria you spot. Format this as a clean, readable professional analysis report using plain text paragraphs.
 DO NOT use any markdown formatting symbols (no **, no ##, no *, no -). Write purely in plain text sentences so it does not look like a README file.
-IMPORTANT: You MUST end your response with a strictly valid JSON block containing your final findings. This JSON block MUST be wrapped in \`\`\`json and \`\`\` tags and match this EXACT schema:
+IMPORTANT: You MUST end your response with a strictly valid JSON block containing your final findings. This JSON block MUST be wrapped in \`\`\`json and \`\`\` tags and match this EXACT massive schema required for our 8-tab Workspace:
 {
-  "tender_metadata": {"title": "Full name", "issuing_authority": "Agency", "deadline": "Date if found", "category": "Industry"},
-  "executive_summary": {"brief_explanation": "What this tender is about", "bid_readiness_score": 85, "overall_readiness_statement": "1-2 sentence readiness summary"},
-  "top_blockers": [{"blocker": "Critical missing item or trap", "type": "Missing Document / Risk"}],
+  "tender_metadata": {"title": "Full name", "issuing_authority": "Agency", "deadline": "Exact string if found", "category": "Industry", "page_count": 0, "submission_type": "PDF/Portal expected"},
+  "executive_summary": {"brief_explanation": "What this tender is strictly about", "bid_readiness_score": 85, "overall_readiness_statement": "1-2 sentence readiness summary"},
+  "top_blockers": [{"blocker": "Top missing item", "type": "Missing Document / Risk / Rule"}],
   "next_actions": ["Upload X", "Confirm Y"],
-  "mandatory_requirements": [{"requirement": "description", "criticality": "high/medium/low", "source_clause": "Section X", "status": "pending"}],
-  "required_documents": [{"document_name": "Form Name", "mandatory": true, "present": false}],
-  "risks_flagged": ["Hidden traps or harsh conditions"],
-  "evaluation_criteria": [{"criterion": "name", "weight": "percentage"}]
+  "mandatory_requirements": [{"requirement": "description", "category": "Technical/Legal/Financial/Other", "criticality": "high/medium/low", "source_clause": "Section X", "page_number": 1, "status": "satisfied/missing_info/unresolved/action_needed"}],
+  "required_documents": [{"document_name": "Form Name", "document_type": "Forms/Certifications/Pricing Sheets/Legal/Technical Attachments/Other", "mandatory": true, "present": false, "source_clause": "Section Y", "page_number": 2, "why_required": "Context"}],
+  "risks_flagged": [{"risk_title": "Headline", "risk_type": "missing document risk/deadline ambiguity/contradictory instruction/signature risk/formatting risk/eligibility risk/submission rule risk", "severity": "critical/major/minor", "explanation": "Why this ruins the bid", "source_clause": "Section Z", "page_number": 3, "recommended_action": "Do X to resolve"}],
+  "evaluation_criteria": [{"criterion": "name", "description": "Details", "weight": "percentage/score/status", "source_clause": "Section W", "implication": "What this means for strategy"}]
 }
 Your entire response ending with the JSON block will be streamed live.`
                 },

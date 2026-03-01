@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import { Workspace } from "./Workspace";
 
 interface UploadTenderProps {
     onBack: () => void;
@@ -32,9 +33,10 @@ function UploadTender({ onBack }: UploadTenderProps) {
     // Analysis State
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [activeStage, setActiveStage] = useState(0);
-    const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+    const [analysisData, setAnalysisData] = useState<AnalysisData | any>(null);
     const [thoughtProcess, setThoughtProcess] = useState("");
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [showWorkspace, setShowWorkspace] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,6 +61,7 @@ function UploadTender({ onBack }: UploadTenderProps) {
         setExtractedText("");
         setAnalysisData(null);
         setActiveStage(0);
+        setShowWorkspace(false);
 
         const formData = new FormData();
         formData.append("file", file);
@@ -95,6 +98,7 @@ function UploadTender({ onBack }: UploadTenderProps) {
         setAnalysisData(null);
         setThoughtProcess("");
         setActiveStage(0);
+        setShowWorkspace(false);
 
         try {
             const response = await fetch("http://127.0.0.1:5000/api/tender/analyze/stream", {
@@ -150,6 +154,10 @@ function UploadTender({ onBack }: UploadTenderProps) {
                 console.error("No JSON output detected in stream.");
             }
             setActiveStage(STAGES.length);
+            // Wait 1.5 seconds for the user to absorb completion, then transition to Workspace
+            setTimeout(() => {
+                setShowWorkspace(true);
+            }, 1500);
         } catch (error) {
             console.error("Error analyzing:", error);
             alert("Network error during analysis.");
@@ -162,6 +170,21 @@ function UploadTender({ onBack }: UploadTenderProps) {
     const isComplete = !isAnalyzing && analysisData !== null;
     // Condition to show timeline view vs original upload view
     const showTimelineView = isAnalyzing || isComplete;
+
+    if (showWorkspace && analysisData && uploadedFile) {
+        return (
+            <AnimatePresence>
+                <motion.div
+                    key="workspace-view"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <Workspace file={uploadedFile} data={analysisData} onBack={() => setShowWorkspace(false)} />
+                </motion.div>
+            </AnimatePresence>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black p-1 flex flex-col">
