@@ -4,15 +4,22 @@ import { motion } from 'framer-motion';
 interface SubmissionReviewTabProps {
     data: any;
     onNavigate?: (tab: string) => void;
+    uploadedDocs?: Record<string, { originalName: string; storedName: string }>;
 }
 
-export const SubmissionReviewTab: React.FC<SubmissionReviewTabProps> = ({ data, onNavigate }) => {
+export const SubmissionReviewTab: React.FC<SubmissionReviewTabProps> = ({ data, onNavigate, uploadedDocs = {} }) => {
     // Computed Metrics
     const exec = data.executive_summary || {};
     const readinessScore = exec.bid_readiness_score || 0;
 
     const docs = data.required_documents || [];
-    const missingDocsCount = docs.filter((d: any) => typeof d !== 'string' && d.mandatory && !d.present).length;
+    const missingDocsCount = docs.filter((d: any) => {
+        const isStr = typeof d === 'string';
+        const name = isStr ? d : (d.document_name || '');
+        const key = `doc::${name.replace(/\s+/g, '_').toLowerCase()}`;
+        if (uploadedDocs[key]) return false;
+        return isStr ? true : (d.mandatory && !d.present);
+    }).length;
 
     const risks = data.risks_flagged || [];
     const criticalRisksCount = risks.filter((r: any) => typeof r !== 'string' && r.severity?.toLowerCase() === 'critical').length;
@@ -23,7 +30,7 @@ export const SubmissionReviewTab: React.FC<SubmissionReviewTabProps> = ({ data, 
     const isReady = missingDocsCount === 0 && criticalRisksCount === 0 && unresolvedReqsCount === 0;
 
     return (
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="h-full flex flex-col max-w-5xl mx-auto py-8">
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} className="h-full flex flex-col py-8">
 
             {/* Top Readiness Score Section */}
             <div className={`bg-white rounded-2xl p-8 border shadow-sm mb-8 flex items-center justify-between transition-colors
@@ -137,9 +144,8 @@ export const SubmissionReviewTab: React.FC<SubmissionReviewTabProps> = ({ data, 
                     )}
                 </div>
 
-                <div className="bg-[#2a2f36] rounded-xl p-6 border border-[#1a1d24] flex flex-col justify-center text-center shadow-lg relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="relative z-10">
+                <div className="bg-[#fbf9f6] rounded-xl p-6 border border-[#d4d0c5] flex flex-col justify-center text-center shadow-sm">
+                    <div>
                         <button
                             onClick={() => {
                                 const pkg = {
@@ -166,11 +172,10 @@ export const SubmissionReviewTab: React.FC<SubmissionReviewTabProps> = ({ data, 
                                 URL.revokeObjectURL(url);
                             }}
                             disabled={!isReady}
-                            className={`w-full py-4 rounded-lg font-bold text-[15px] tracking-wide transition-all shadow-md flex items-center justify-center gap-3
+                            className={`w-full py-4 rounded-lg font-bold text-[15px] tracking-wide transition-all shadow-sm flex items-center justify-center gap-3
                                 ${isReady
-                                    ? 'bg-white text-[#2a2f36] hover:scale-[1.02] cursor-pointer'
-                                    : 'bg-neutral-600/50 text-neutral-400 cursor-not-allowed border border-neutral-600'}
-                            `}
+                                    ? 'bg-[#2a2f36] text-white hover:bg-black cursor-pointer'
+                                    : 'bg-neutral-200 text-neutral-400 cursor-not-allowed border border-neutral-300'}`}
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                             Generate Final Response Package

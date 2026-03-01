@@ -40,6 +40,39 @@ function UploadTender({ onBack }: UploadTenderProps) {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Load saved analysis from localStorage on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('strata_analysis');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.analysisData && parsed.fileMeta) {
+                    setAnalysisData(parsed.analysisData);
+                    // Create a dummy File object for display
+                    const dummyFile = new File([''], parsed.fileMeta.name, { type: parsed.fileMeta.type });
+                    Object.defineProperty(dummyFile, 'size', { value: parsed.fileMeta.size });
+                    setUploadedFile(dummyFile);
+                    setActiveStage(STAGES.length);
+                    setShowWorkspace(true);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load saved analysis:', e);
+        }
+    }, []);
+
+    // Clear saved analysis and start fresh
+    const handleNewAnalysis = () => {
+        localStorage.removeItem('strata_analysis');
+        setShowWorkspace(false);
+        setUploadedFile(null);
+        setAnalysisData(null);
+        setExtractedText("");
+        setThoughtProcess("");
+        setActiveStage(0);
+        setElapsedTime(0);
+    };
+
     // Advanced Timeline Simulation (Now driven by real-time stream size)
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
@@ -146,7 +179,15 @@ function UploadTender({ onBack }: UploadTenderProps) {
             const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/);
             if (jsonMatch && jsonMatch[1]) {
                 try {
-                    setAnalysisData(JSON.parse(jsonMatch[1]));
+                    const parsed = JSON.parse(jsonMatch[1]);
+                    setAnalysisData(parsed);
+                    // Save to localStorage
+                    if (uploadedFile) {
+                        localStorage.setItem('strata_analysis', JSON.stringify({
+                            analysisData: parsed,
+                            fileMeta: { name: uploadedFile.name, size: uploadedFile.size, type: uploadedFile.type }
+                        }));
+                    }
                 } catch (e) {
                     console.error("Failed parsing JSON output", e);
                 }
@@ -180,7 +221,7 @@ function UploadTender({ onBack }: UploadTenderProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    <Workspace file={uploadedFile} data={analysisData} onBack={() => setShowWorkspace(false)} />
+                    <Workspace file={uploadedFile} data={analysisData} onBack={() => setShowWorkspace(false)} onNewAnalysis={handleNewAnalysis} />
                 </motion.div>
             </AnimatePresence>
         );
@@ -206,7 +247,15 @@ function UploadTender({ onBack }: UploadTenderProps) {
 
                     <div className="hidden md:flex items-center gap-6">
                         <button className="nav-box-hover">Sample Analysis</button>
-                        <button className="nav-box-hover opacity-40 cursor-not-allowed" disabled title="Complete an upload first">Workspace</button>
+                        <button
+                            className={`nav-box-hover flex items-center gap-2 ${isComplete ? 'cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
+                            disabled={!isComplete}
+                            title={isComplete ? 'Open Analysis Workspace' : 'Complete analysis first'}
+                            onClick={() => isComplete && setShowWorkspace(true)}
+                        >
+                            {isComplete && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
+                            Workspace
+                        </button>
                         <button className="nav-box-hover">Help</button>
                         <div className="relative">
                             <button onClick={onBack} className="nav-box-hover flex items-center justify-center gap-2">
@@ -385,9 +434,9 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                                 <h3 style={{ fontFamily: "Inter, sans-serif" }} className="font-semibold text-4xl text-black tabular-nums">
                                                     {Math.floor(elapsedTime / 60).toString().padStart(2, '0')}:{(elapsedTime % 60).toString().padStart(2, '0')}
                                                 </h3>
-                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[14px] text-neutral-500 mt-2">Time elapsed (Real-time AI Processing)</p>
+                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[14px] text-neutral-500 mt-2">Time Elapsed</p>
                                                 <div className="mt-6 pt-6 border-t border-[#e5e0d5]">
-                                                    <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] font-bold text-neutral-400 tracking-widest uppercase">Streaming AI Forensics</p>
+                                                    <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] font-bold text-neutral-400 tracking-widest uppercase">Processing</p>
                                                 </div>
                                             </motion.div>
 
@@ -408,25 +457,24 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                     {isComplete && analysisData && (
                                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-4">
                                             {/* Found-so-far Summary Chips */}
-                                            <div className="bg-[#2a2f36] rounded-2xl p-6 text-left text-white shadow-xl relative overflow-hidden">
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                                                <h4 style={{ fontFamily: "Inter, sans-serif" }} className="text-[11px] tracking-[0.15em] text-[#a8a498] uppercase mb-6 font-bold">Discovery Overview</h4>
+                                            <div className="bg-white border border-[#d4d0c5] rounded-2xl p-6 text-left shadow-md relative overflow-hidden">
+                                                <h4 style={{ fontFamily: "Inter, sans-serif" }} className="text-[11px] tracking-[0.15em] text-neutral-500 uppercase mb-6 font-bold">Discovery Overview</h4>
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-6">
                                                     <div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light mb-1">{Array.isArray(analysisData.mandatory_requirements) ? analysisData.mandatory_requirements.length : 0}</div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-[#a8a498] leading-tight">Mandatory<br />Requirements</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light text-[#2a2f36] mb-1">{Array.isArray(analysisData.mandatory_requirements) ? analysisData.mandatory_requirements.length : 0}</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-neutral-500 leading-tight">Mandatory<br />Requirements</div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light mb-1">{Array.isArray(analysisData.required_documents) ? analysisData.required_documents.length : 0}</div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-[#a8a498] leading-tight">Required<br />Documents</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light text-[#2a2f36] mb-1">{Array.isArray(analysisData.required_documents) ? analysisData.required_documents.length : 0}</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-neutral-500 leading-tight">Required<br />Documents</div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light text-red-300 mb-1">{Array.isArray(analysisData.risks_flagged) ? analysisData.risks_flagged.length : 0}</div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-[#a8a498] leading-tight">Risks & Traps<br />Flagged</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light text-red-500 mb-1">{Array.isArray(analysisData.risks_flagged) ? analysisData.risks_flagged.length : 0}</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-neutral-500 leading-tight">Risks & Traps<br />Flagged</div>
                                                     </div>
                                                     <div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light mb-1">{Array.isArray(analysisData.evaluation_criteria) ? analysisData.evaluation_criteria.length : 0}</div>
-                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-[#a8a498] leading-tight">Evaluation<br />Criteria</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-4xl font-light text-[#2a2f36] mb-1">{Array.isArray(analysisData.evaluation_criteria) ? analysisData.evaluation_criteria.length : 0}</div>
+                                                        <div style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] text-neutral-500 leading-tight">Evaluation<br />Criteria</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -436,10 +484,10 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                                 <div className="bg-white border border-[#c9c6b9] rounded-2xl p-6 text-left shadow-md flex flex-col max-h-[450px]">
                                                     <h4 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="font-bold text-black text-[18px] mb-2 flex items-center gap-2">
                                                         <svg className="w-5 h-5 text-[#3e5e48]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        Final Analysis Report
+                                                        Analysis Report
                                                     </h4>
                                                     <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[13px] text-neutral-500 mb-5 leading-relaxed">
-                                                        The complete forensic breakdown performed by Mistral AI in real time.
+                                                        Detailed analysis breakdown of the tender document.
                                                     </p>
                                                     <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-2 text-[13px] text-neutral-700 leading-relaxed whitespace-pre-wrap font-mono">
                                                         {thoughtProcess}

@@ -25,7 +25,7 @@ export const ComplianceMatrixTab: React.FC<ComplianceMatrixTabProps> = ({ data, 
     const totalCount = rawMatrix.length;
 
     return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="h-full flex flex-col space-y-6 max-w-[1400px]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="h-full flex flex-col space-y-6">
 
             {/* Top Stat Bar */}
             <div className="flex items-center gap-6 bg-white p-4 rounded-xl border border-[#d4d0c5] shadow-sm">

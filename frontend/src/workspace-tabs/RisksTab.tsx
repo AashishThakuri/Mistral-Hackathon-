@@ -19,7 +19,7 @@ export const RisksTab: React.FC<RisksTabProps> = ({ data, onNavigate }) => {
         .slice(0, 4);
 
     return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="h-full flex flex-col space-y-8 max-w-[1300px]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="h-full flex flex-col space-y-8">
 
             {/* Top Summary Cards */}
             <div className="grid grid-cols-4 gap-4">

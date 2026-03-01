@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import {
     extractTenderText,
     analyzeTenderRequirements,
@@ -9,6 +11,7 @@ import {
     draftProposalSection,
     getDocumentEmbeddings
 } from './services/mistralService';
+import { transcribeAudio } from './services/voxtralService';
 
 dotenv.config();
 
@@ -105,6 +108,78 @@ app.post('/api/knowledge/embed', async (req, res) => {
         res.json({ success: true, embeddings });
     } catch (error: any) {
         res.status(500).json({ error: error.message || 'Embedding failed' });
+    }
+});
+
+// Supporting document upload (stores with original name)
+
+const supportingUpload = multer({
+    storage: multer.diskStorage({
+        destination: (_req, _file, cb) => {
+            const dir = 'uploads/documents/';
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            cb(null, dir);
+        },
+        filename: (_req, file, cb) => {
+            const uniqueName = `${Date.now()}-${file.originalname}`;
+            cb(null, uniqueName);
+        }
+    })
+});
+
+app.post('/api/documents/upload', supportingUpload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file provided' });
+        }
+        console.log(`[Documents] Uploaded: ${req.file.originalname} → ${req.file.filename}`);
+        res.json({
+            success: true,
+            file: {
+                originalName: req.file.originalname,
+                storedName: req.file.filename,
+                size: req.file.size,
+                path: req.file.path
+            }
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message || 'Upload failed' });
+    }
+});
+
+app.delete('/api/documents/remove', (req, res) => {
+    try {
+        const { storedName } = req.body;
+        if (!storedName) {
+            return res.status(400).json({ error: 'storedName is required' });
+        }
+        const filePath = path.join('uploads/documents/', storedName);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`[Documents] Removed: ${storedName}`);
+        }
+        res.json({ success: true });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message || 'Remove failed' });
+    }
+});
+
+// Voxtral — Audio transcription
+const audioUpload = multer({ dest: 'uploads/audio/' });
+
+app.post('/api/voxtral/transcribe', audioUpload.single('audio'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No audio file uploaded' });
+        }
+        console.log(`[Voxtral] Processing audio: ${req.file.originalname}`);
+        const result = await transcribeAudio(req.file.path);
+        // Clean up uploaded file
+        fs.unlinkSync(req.file.path);
+        res.json({ success: true, data: result });
+    } catch (error: any) {
+        console.error('[Voxtral] Transcription failed:', error);
+        res.status(500).json({ error: error.message || 'Transcription failed' });
     }
 });
 

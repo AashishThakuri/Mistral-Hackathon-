@@ -5,48 +5,76 @@ interface OverviewTabProps {
     data: any;
     meta: any;
     onNavigate: (tab: string) => void;
+    uploadedDocs?: Record<string, { originalName: string; storedName: string }>;
 }
 
-export const OverviewTab: React.FC<OverviewTabProps> = ({ data, meta, onNavigate }) => {
+export const OverviewTab: React.FC<OverviewTabProps> = ({ data, meta, onNavigate, uploadedDocs = {} }) => {
     const exec = data.executive_summary || {};
     const topBlockers = data.top_blockers || [];
     const nextActions = data.next_actions || [];
 
     const requirements = data.mandatory_requirements || [];
     const documents = data.required_documents || [];
+    const missingDocCount = documents.filter((d: any) => {
+        const isStr = typeof d === 'string';
+        const name = isStr ? d : (d.document_name || '');
+        const key = `doc::${name.replace(/\s+/g, '_').toLowerCase()}`;
+        if (uploadedDocs[key]) return false;
+        return isStr ? true : (d.mandatory !== false && !d.present);
+    }).length;
     const risks = data.risks_flagged || [];
     const criteria = data.evaluation_criteria || [];
 
     return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-8 max-w-[1200px]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-8">
 
-            {/* Top Row: Summary Cards */}
+            {/* Top Row: Quick Navigation Cards */}
             <div className="grid grid-cols-5 gap-4">
-                <div className="bg-[#2a2f36] p-5 rounded-lg border border-[#1a1d24] shadow-md flex flex-col justify-between">
-                    <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mb-1">Bid Readiness</p>
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-4xl font-bold ${exec.bid_readiness_score > 70 ? 'text-emerald-400' : exec.bid_readiness_score > 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-                            {exec.bid_readiness_score || 0}
-                        </span>
-                        <span className="text-neutral-500 font-medium text-sm">/ 100</span>
+                <button onClick={() => onNavigate('Overview')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
+                    <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                     </div>
-                </div>
-                <div onClick={() => onNavigate('Requirements')} className="bg-white p-5 rounded-lg border border-[#d4d0c5]/70 shadow-sm flex flex-col justify-between cursor-pointer hover:border-[#2a2f36] hover:shadow-md transition-all">
-                    <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-1">Requirements</p>
-                    <span className="text-3xl font-bold text-[#2a2f36]">{requirements.length}</span>
-                </div>
-                <div onClick={() => onNavigate('Documents')} className="bg-white p-5 rounded-lg border border-[#d4d0c5]/70 shadow-sm flex flex-col justify-between cursor-pointer hover:border-[#2a2f36] hover:shadow-md transition-all">
-                    <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-1">Documents</p>
-                    <span className="text-3xl font-bold text-[#2a2f36]">{documents.length}</span>
-                </div>
-                <div onClick={() => onNavigate('Risks')} className="bg-white p-5 rounded-lg border border-[#d4d0c5]/70 shadow-sm flex flex-col justify-between cursor-pointer hover:border-[#2a2f36] hover:shadow-md transition-all">
-                    <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-1">Risk Flags</p>
-                    <span className="text-3xl font-bold text-red-600">{risks.length}</span>
-                </div>
-                <div onClick={() => onNavigate('Evaluation')} className="bg-white p-5 rounded-lg border border-[#d4d0c5]/70 shadow-sm flex flex-col justify-between cursor-pointer hover:border-[#2a2f36] hover:shadow-md transition-all">
-                    <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest mb-1">Eval Criteria</p>
-                    <span className="text-3xl font-bold text-[#2a2f36]">{criteria.length}</span>
-                </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-[#2a2f36]">Bid Readiness</p>
+                        <p className={`text-[13px] font-bold ${exec.bid_readiness_score > 70 ? 'text-emerald-600' : exec.bid_readiness_score > 40 ? 'text-yellow-600' : 'text-red-600'}`}>{exec.bid_readiness_score || 0} / 100</p>
+                    </div>
+                </button>
+                <button onClick={() => onNavigate('Requirements')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
+                    <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 14l2 2 4-4" /></svg>
+                    </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-[#2a2f36]">Requirements</p>
+                        <p className="text-[12px] text-neutral-500">View {requirements.length} conditions</p>
+                    </div>
+                </button>
+                <button onClick={() => onNavigate('Documents')} className={`flex items-center gap-4 p-4 rounded-lg border shadow-sm hover:shadow-md transition-all group text-left cursor-pointer ${missingDocCount === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-[#d4d0c5]/80 hover:border-[#2a2f36]'}`}>
+                    <div className={`w-10 h-10 rounded flex items-center justify-center transition-colors ${missingDocCount === 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-[#f0ebe1] text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white'}`}>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                    </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-[#2a2f36]">Documents</p>
+                        <p className="text-[12px] text-neutral-500">{documents.length - missingDocCount} / {documents.length} uploaded{missingDocCount > 0 && <span className="text-orange-600 font-bold ml-1">· {missingDocCount} missing</span>}</p>
+                    </div>
+                </button>
+                <button onClick={() => onNavigate('Risks')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
+                    <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-[#2a2f36]">Risk Matrix</p>
+                        <p className="text-[12px] text-neutral-500">{risks.length} traps flagged</p>
+                    </div>
+                </button>
+                <button onClick={() => onNavigate('Evaluation')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
+                    <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </div>
+                    <div>
+                        <p className="text-[14px] font-bold text-[#2a2f36]">Eval Criteria</p>
+                        <p className="text-[12px] text-neutral-500">{criteria.length} scoring areas</p>
+                    </div>
+                </button>
             </div>
 
             {/* Second Row: Executive Summary & Key Info */}
@@ -151,48 +179,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data, meta, onNavigate
                 </section>
             </div>
 
-            {/* Bottom Row: Quick Previews */}
-            <section className="pt-4">
-                <h3 className="text-[13px] font-bold uppercase tracking-wider text-neutral-400 mb-4 px-1">Quick Deep-Dives</h3>
-                <div className="grid grid-cols-4 gap-4">
-                    <button onClick={() => onNavigate('Requirements')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
-                        <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 14l2 2 4-4" /></svg>
-                        </div>
-                        <div>
-                            <p className="text-[14px] font-bold text-[#2a2f36]">Requirements</p>
-                            <p className="text-[12px] text-neutral-500">View {requirements.length} conditions</p>
-                        </div>
-                    </button>
-                    <button onClick={() => onNavigate('Documents')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
-                        <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
-                        </div>
-                        <div>
-                            <p className="text-[14px] font-bold text-[#2a2f36]">Documents</p>
-                            <p className="text-[12px] text-neutral-500">Review {documents.length} files</p>
-                        </div>
-                    </button>
-                    <button onClick={() => onNavigate('Risks')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
-                        <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                        </div>
-                        <div>
-                            <p className="text-[14px] font-bold text-[#2a2f36]">Risk Matrix</p>
-                            <p className="text-[12px] text-neutral-500">{risks.length} traps flagged</p>
-                        </div>
-                    </button>
-                    <button onClick={() => onNavigate('Compliance Matrix')} className="flex items-center gap-4 bg-white p-4 rounded-lg border border-[#d4d0c5]/80 hover:border-[#2a2f36] shadow-sm hover:shadow-md transition-all group text-left cursor-pointer">
-                        <div className="w-10 h-10 rounded bg-[#f0ebe1] flex items-center justify-center text-neutral-600 group-hover:bg-[#2a2f36] group-hover:text-white transition-colors">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                        </div>
-                        <div>
-                            <p className="text-[14px] font-bold text-[#2a2f36]">Compliance</p>
-                            <p className="text-[12px] text-neutral-500">Track all evidence</p>
-                        </div>
-                    </button>
-                </div>
-            </section>
+
 
         </motion.div>
     );

@@ -120,7 +120,7 @@ DO NOT use any markdown formatting symbols (no **, no ##, no *, no -). Write pur
 IMPORTANT: You MUST end your response with a strictly valid JSON block containing your final findings. This JSON block MUST be wrapped in \`\`\`json and \`\`\` tags and match this EXACT massive schema required for our 8-tab Workspace:
 {
   "tender_metadata": {"title": "Full name", "issuing_authority": "Agency", "deadline": "Exact string if found", "category": "Industry", "page_count": 0, "submission_type": "PDF/Portal expected"},
-  "executive_summary": {"brief_explanation": "What this tender is strictly about", "bid_readiness_score": 85, "overall_readiness_statement": "1-2 sentence readiness summary"},
+  "executive_summary": {"brief_explanation": "What this tender is strictly about", "bid_readiness_score": "<CALCULATE: integer 0-100 based on how prepared the bid actually is, considering missing docs, risks, and requirements met. Do NOT just use 85>", "overall_readiness_statement": "1-2 sentence readiness summary"},
   "top_blockers": [{"blocker": "Top missing item", "type": "Missing Document / Risk / Rule"}],
   "next_actions": ["Upload X", "Confirm Y"],
   "mandatory_requirements": [{"requirement": "description", "category": "Technical/Legal/Financial/Other", "criticality": "high/medium/low", "source_clause": "Section X", "page_number": 1, "status": "satisfied/missing_info/unresolved/action_needed"}],
