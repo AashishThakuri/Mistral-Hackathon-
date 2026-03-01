@@ -32,9 +32,9 @@ function App() {
       )}
       {/* Main Container with Rounded Corners */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 1.5 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: showPreloader ? 1.5 : 0 }}
         className="relative flex-1 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-white/10"
       >
         {/* Background Image */}
@@ -78,7 +78,7 @@ function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.0 }}
+            transition={{ duration: 0.5, delay: showPreloader ? 2.0 : 0.1 }}
             className="absolute top-[23%] left-[5%] md:left-[7%] max-w-[90%] md:max-w-4xl lg:max-w-5xl pointer-events-auto"
           >
             <h1
@@ -95,7 +95,7 @@ function App() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.3 }}
+            transition={{ duration: 0.5, delay: showPreloader ? 2.3 : 0.2 }}
             className="absolute top-[59%] lg:top-[57.5%] left-[8%] lg:left-[7.5%] w-[80%] md:w-[35%] lg:w-[38%] min-h-[160px] md:min-h-[200px] lg:min-h-[280px] p-8 lg:p-10 pointer-events-auto bg-[#c9c6b9]/40 rounded-sm flex flex-col justify-center"
           >
             <h2 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="text-xl md:text-2xl text-neutral-800 leading-relaxed mb-5 tracking-normal font-normal">
