@@ -5,6 +5,7 @@ import multer from 'multer';
 import {
     extractTenderText,
     analyzeTenderRequirements,
+    streamTenderAnalysis,
     draftProposalSection,
     getDocumentEmbeddings
 } from './services/mistralService';
@@ -52,6 +53,27 @@ app.post('/api/tender/analyze', async (req, res) => {
         res.json({ success: true, analysis });
     } catch (error: any) {
         res.status(500).json({ error: error.message || 'Analysis failed' });
+    }
+});
+
+// 2b) Reasoning Stream: mistral-large-2512 SSE
+app.post('/api/tender/analyze/stream', async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text) {
+            return res.status(400).json({ error: 'Tender text is required' });
+        }
+
+        // Set headers for SSE
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        await streamTenderAnalysis(text, res);
+    } catch (error: any) {
+        console.error('Error in streaming endpoint:', error);
+        res.write(`data: ${JSON.stringify({ error: error.message || 'Streaming failed' })}\n\n`);
+        res.end();
     }
 });
 

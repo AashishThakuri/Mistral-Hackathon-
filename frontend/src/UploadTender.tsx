@@ -33,20 +33,19 @@ function UploadTender({ onBack }: UploadTenderProps) {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [activeStage, setActiveStage] = useState(0);
     const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+    const [thoughtProcess, setThoughtProcess] = useState("");
+    const [elapsedTime, setElapsedTime] = useState(0);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Advanced Timeline Simulation
+    // Advanced Timeline Simulation (Now driven by real-time stream size)
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;
         if (isAnalyzing) {
-            setActiveStage(0);
+            setElapsedTime(0);
             interval = setInterval(() => {
-                setActiveStage((prev) => {
-                    if (prev < STAGES.length - 1) return prev + 1;
-                    return prev;
-                });
-            }, 3000);
+                setElapsedTime((prev) => prev + 1);
+            }, 1000);
         }
         return () => clearInterval(interval);
     }, [isAnalyzing]);
@@ -94,21 +93,63 @@ function UploadTender({ onBack }: UploadTenderProps) {
 
         setIsAnalyzing(true);
         setAnalysisData(null);
+        setThoughtProcess("");
+        setActiveStage(0);
+
         try {
-            const response = await fetch("http://127.0.0.1:5000/api/tender/analyze", {
+            const response = await fetch("http://127.0.0.1:5000/api/tender/analyze/stream", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text: extractedText }),
             });
-            const data = await response.json();
-            if (data.success) {
-                setAnalysisData(data.analysis);
-                setActiveStage(STAGES.length);
-            } else {
-                console.error("Analysis failed:", data.error);
-                alert("Analysis failed: " + data.error);
-                setActiveStage(0);
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+            if (!reader) throw new Error("No reader from stream");
+
+            let fullText = "";
+            let chunkText = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                chunkText += decoder.decode(value, { stream: true });
+                const lines = chunkText.split('\n');
+
+                // Keep the last incomplete line
+                chunkText = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.substring(6);
+                        if (dataStr === '[DONE]') break;
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.content) {
+                                fullText += data.content;
+                                // Clean display text and progress stages based on length
+                                const displayMatch = fullText.split('```json');
+                                setThoughtProcess(displayMatch[0].trim().replace(/[*#_]/g, ''));
+                                // Roughly guess stages based on text volume to keep UI alive
+                                setActiveStage(Math.max(0, Math.min(6, Math.floor(displayMatch[0].length / 400))));
+                            }
+                        } catch (e) { }
+                    }
+                }
             }
+
+            // Extract the final JSON
+            const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/);
+            if (jsonMatch && jsonMatch[1]) {
+                try {
+                    setAnalysisData(JSON.parse(jsonMatch[1]));
+                } catch (e) {
+                    console.error("Failed parsing JSON output", e);
+                }
+            } else {
+                console.error("No JSON output detected in stream.");
+            }
+            setActiveStage(STAGES.length);
         } catch (error) {
             console.error("Error analyzing:", error);
             alert("Network error during analysis.");
@@ -173,20 +214,26 @@ function UploadTender({ onBack }: UploadTenderProps) {
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }} className="w-full max-w-xl flex flex-col items-center z-10">
                                 {!uploadedFile ? (
                                     <>
-                                        <button onClick={() => fileInputRef.current?.click()} className="bg-[#2a2f36] hover:bg-[#1a1d24] text-white px-10 py-4 text-[15px] font-medium transition-colors rounded-[3px] shadow-sm tracking-wide" style={{ fontFamily: "Inter, sans-serif" }}>
+                                        <button onClick={() => fileInputRef.current?.click()} className="bg-[#2a2f36] hover:bg-[#1a1d24] text-white px-10 py-4 text-[15px] font-medium transition-colors cursor-pointer rounded-[3px] shadow-sm tracking-wide" style={{ fontFamily: "Inter, sans-serif" }}>
                                             Upload Tender Files
                                         </button>
                                         <p style={{ fontFamily: "Inter, sans-serif" }} className="mt-5 text-[13px] text-neutral-400">or <button className="text-neutral-400 hover:text-neutral-600 transition-colors cursor-pointer">view sample analysis</button></p>
                                     </>
                                 ) : (
                                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-2xl border border-[#B8C9B9] bg-[#B8C9B9]/10 p-8 text-center w-full">
-                                        <svg className="w-12 h-12 mx-auto text-[#7aa87a] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        {isUploading ? (
+                                            <div className="w-12 h-12 rounded-full border-[3px] border-[#c1ccbed1] border-t-[#7aa87a] animate-spin mx-auto mb-4"></div>
+                                        ) : (
+                                            <svg className="w-12 h-12 mx-auto text-emerald-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        )}
                                         <p style={{ fontFamily: "Inter, sans-serif" }} className="text-lg font-medium text-neutral-800 mb-1">{uploadedFile.name}</p>
-                                        <p style={{ fontFamily: "Inter, sans-serif" }} className="text-sm text-neutral-500 mb-6">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB {isUploading && "• Extracting text with Mistral OCR..."}</p>
+                                        <p style={{ fontFamily: "Inter, sans-serif" }} className="text-sm text-neutral-500 mb-6">
+                                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB {isUploading ? <span className="text-[#a16207]"> • Extracting text with Mistral OCR...</span> : <span className="text-[#3e5e48] font-medium"> • Ready</span>}
+                                        </p>
                                         <div className="flex gap-4 justify-center">
                                             <button onClick={() => { setUploadedFile(null); setExtractedText(""); setAnalysisData(null); }} disabled={isUploading || isAnalyzing} className={`nav-box-hover ${isUploading || isAnalyzing ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ fontFamily: "Inter, sans-serif", fontSize: "14px" }}>Remove</button>
                                             <button onClick={handleAnalyze} disabled={isUploading || isAnalyzing || !extractedText} className={`nav-box-hover flex items-center justify-center gap-2 ${isUploading || isAnalyzing || !extractedText ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", padding: "12px 32px", background: "#B8C9B9" }}>
-                                                Analyze Tender
+                                                {isUploading ? "Reading Document..." : "Analyze Tender"}
                                             </button>
                                         </div>
                                     </motion.div>
@@ -234,7 +281,7 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                         <span>{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</span>
                                         <span>•</span>
                                         <span className="text-[#3e5e48] font-medium flex items-center gap-1">
-                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                            <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                             Text Extracted
                                         </span>
                                     </p>
@@ -257,11 +304,11 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                             <div key={index} className="relative z-10 flex gap-6 mb-4">
                                                 {/* Status Node */}
                                                 <div className="flex flex-col items-center mt-1">
-                                                    <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 bg-[#f0ebe1] transition-colors duration-500 flex-shrink-0
-                                                        ${isPast ? 'border-[#2a2f36] bg-[#2a2f36]' : isCurrent ? 'border-[#a16207] bg-[#fefce8]' : 'border-[#d4d0c5]'}`}
+                                                    <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-colors duration-500 flex-shrink-0
+                                                        ${isPast ? 'border-[#2a2f36] bg-[#f0ebe1]' : isCurrent ? 'border-[#a16207] bg-[#fefce8]' : 'border-[#d4d0c5] bg-[#f0ebe1]'}`}
                                                     >
                                                         {isPast ? (
-                                                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                                            <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                                         ) : isCurrent ? (
                                                             <svg className="w-5 h-5 text-[#a16207] animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                                         ) : (
@@ -312,22 +359,24 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                                 <svg className="w-10 h-10 mx-auto text-[#a16207] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                <h3 style={{ fontFamily: "Inter, sans-serif" }} className="font-semibold text-3xl text-black">1-2 min</h3>
-                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[14px] text-neutral-500 mt-2">Estimated time remaining</p>
+                                                <h3 style={{ fontFamily: "Inter, sans-serif" }} className="font-semibold text-4xl text-black tabular-nums">
+                                                    {Math.floor(elapsedTime / 60).toString().padStart(2, '0')}:{(elapsedTime % 60).toString().padStart(2, '0')}
+                                                </h3>
+                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[14px] text-neutral-500 mt-2">Time elapsed (Real-time AI Processing)</p>
                                                 <div className="mt-6 pt-6 border-t border-[#e5e0d5]">
-                                                    <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] font-bold text-neutral-400 tracking-widest uppercase">{activeStage} of {STAGES.length} stages complete</p>
+                                                    <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[12px] font-bold text-neutral-400 tracking-widest uppercase">Streaming AI Forensics</p>
                                                 </div>
                                             </motion.div>
 
-                                            {/* What we're analyzing Explainer (While Loading) */}
-                                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white border border-[#c9c6b9] rounded-2xl p-6 text-left shadow-sm">
-                                                <h4 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="font-bold text-black text-[18px] mb-3">Live Analysis Forensics</h4>
-                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[13.5px] text-neutral-600 leading-relaxed mb-3">
-                                                    We’re executing a multi-pass intelligence extraction across the tender package. This includes identifying eligibility clauses, submission formatting rules, form obligations, technical thresholds, and hidden traps.
-                                                </p>
-                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[13.5px] text-neutral-600 leading-relaxed">
-                                                    Each detected item will be tagged by criticality severity, linked to exact paragraph evidence, and fed straight into your compliance gap matrix.
-                                                </p>
+                                            {/* AI Thought Process (Live) */}
+                                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white border border-[#c9c6b9] rounded-2xl p-6 text-left shadow-sm max-h-[400px] flex flex-col mt-4">
+                                                <h4 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="font-bold text-black text-[18px] mb-3 flex items-center gap-2">
+                                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                                    Live AI Thought Process
+                                                </h4>
+                                                <div className="flex-1 overflow-y-auto custom-scrollbar text-[13px] text-neutral-700 leading-relaxed whitespace-pre-wrap font-mono">
+                                                    {thoughtProcess || "Connecting to Mistral Reasoning Engine..."}
+                                                </div>
                                             </motion.div>
                                         </AnimatePresence>
                                     )}
@@ -359,19 +408,18 @@ function UploadTender({ onBack }: UploadTenderProps) {
                                                 </div>
                                             </div>
 
-                                            {/* Evidence Snippet Panel */}
-                                            {Array.isArray(analysisData.evidence_snippets) && analysisData.evidence_snippets.length > 0 && (
+                                            {/* Final AI Thought Process Panel */}
+                                            {thoughtProcess && (
                                                 <div className="bg-white border border-[#c9c6b9] rounded-2xl p-6 text-left shadow-md flex flex-col max-h-[450px]">
-                                                    <h4 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="font-bold text-black text-[18px] mb-2">Verified Evidence</h4>
+                                                    <h4 style={{ fontFamily: "'Alegreya SC', sans-serif" }} className="font-bold text-black text-[18px] mb-2 flex items-center gap-2">
+                                                        <svg className="w-5 h-5 text-[#3e5e48]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                        Final Analysis Report
+                                                    </h4>
                                                     <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[13px] text-neutral-500 mb-5 leading-relaxed">
-                                                        Direct quotes extracted from the tender package dictating strict compliance mapping.
+                                                        The complete forensic breakdown performed by Mistral AI in real time.
                                                     </p>
-                                                    <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 pb-2">
-                                                        {analysisData.evidence_snippets.map((snippet, idx) => (
-                                                            <div key={idx} className="bg-[#f9f8f4] border border-[#e5e0d5] p-4 rounded-xl border-l-4 border-l-[#2a2f36] shadow-sm">
-                                                                <p style={{ fontFamily: "Inter, sans-serif" }} className="text-[12.5px] text-neutral-700 italic leading-relaxed">"{snippet}"</p>
-                                                            </div>
-                                                        ))}
+                                                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-2 text-[13px] text-neutral-700 leading-relaxed whitespace-pre-wrap font-mono">
+                                                        {thoughtProcess}
                                                     </div>
                                                 </div>
                                             )}

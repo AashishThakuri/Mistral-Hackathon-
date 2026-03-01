@@ -92,16 +92,66 @@ Do not include any extra markdown formatting or conversational text.`
                     content: tenderText
                 }
             ],
-            temperature: 0.1, // Low temperature for factual analysis
+            temperature: 0.1,
         });
 
-        // Parse and return the structured JSON object
         const content = response.choices?.[0]?.message?.content || "{}";
         console.log(`[Mistral Reasoning] Success! Generated JSON analysis.`);
         return JSON.parse(content as string);
     } catch (error) {
         console.error("Error analyzing tender with mistral-large-2512:", error);
         throw error;
+    }
+}
+
+export async function streamTenderAnalysis(tenderText: string, res: any) {
+    try {
+        console.log(`[Mistral Reasoning] Streaming analysis for ${tenderText.length} characters...`);
+
+        // Use regular chat stream without JSON enforcement to get the natural thought process
+        const stream = await client.chat.stream({
+            model: 'mistral-large-2512',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an expert strict tender analyst evaluating a live document.
+First, output a detailed, streaming "thought process" as you analyze the document. Explain what clauses you are finding, what they mean, and any risks or missing criteria you spot. Format this as a clean, readable professional analysis report using plain text paragraphs.
+DO NOT use any markdown formatting symbols (no **, no ##, no *, no -). Write purely in plain text sentences so it does not look like a README file.
+IMPORTANT: You MUST end your response with a strictly valid JSON block containing your final findings. This JSON block MUST be wrapped in \`\`\`json and \`\`\` tags and match this EXACT schema:
+{
+  "tender_metadata": {"title": "Full name", "issuing_authority": "Agency", "deadline": "Date if found", "category": "Industry"},
+  "executive_summary": {"brief_explanation": "What this tender is about", "bid_readiness_score": 85, "overall_readiness_statement": "1-2 sentence readiness summary"},
+  "top_blockers": [{"blocker": "Critical missing item or trap", "type": "Missing Document / Risk"}],
+  "next_actions": ["Upload X", "Confirm Y"],
+  "mandatory_requirements": [{"requirement": "description", "criticality": "high/medium/low", "source_clause": "Section X", "status": "pending"}],
+  "required_documents": [{"document_name": "Form Name", "mandatory": true, "present": false}],
+  "risks_flagged": ["Hidden traps or harsh conditions"],
+  "evaluation_criteria": [{"criterion": "name", "weight": "percentage"}]
+}
+Your entire response ending with the JSON block will be streamed live.`
+                },
+                {
+                    role: 'user',
+                    content: tenderText
+                }
+            ],
+            temperature: 0.2,
+        });
+
+        for await (const chunk of stream) {
+            const content = chunk.data.choices[0].delta.content;
+            if (content) {
+                // Send standard SSE format
+                res.write(`data: ${JSON.stringify({ content })}\n\n`);
+            }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+        console.log(`[Mistral Reasoning] Streaming completed successfully.`);
+    } catch (error) {
+        console.error("Error streaming analysis:", error);
+        res.write(`data: ${JSON.stringify({ error: "Stream failed" })}\n\n`);
+        res.end();
     }
 }
 
