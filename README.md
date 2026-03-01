@@ -1,17 +1,11 @@
 <div align="center">
-  <i><h3 style="color: #666; font-style: italic; font-weight: normal; margin-bottom: 15px;">Built by Team humanize for the Mistral AI Hackathon</h3></i>
+  <p style="color: #616467; font-style: italic; font-size: 18px; margin-bottom: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    Built by Team humanize for the Mistral AI Hackathon
+  </p>
   
-  <div style="display: flex; gap: 10px; justify-content: center; align-items: center; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: bold; font-size: 11px; letter-spacing: 1.5px; margin-bottom: 30px;">
-    <!-- Built with Mistral AI Badge -->
-    <span style="display: inline-flex; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-      <span style="background-color: #4B4D4F; color: white; padding: 6px 12px;">BUILT WITH</span>
-      <span style="background-color: #F88235; color: white; padding: 6px 12px;">MISTRAL AI</span>
-    </span>
-    <!-- Stack Badge -->
-    <span style="display: inline-flex; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-      <span style="background-color: #4B4D4F; color: white; padding: 6px 12px;">REACT + NODE</span>
-      <span style="background-color: #DD5A43; color: white; padding: 6px 12px;">APP</span>
-    </span>
+  <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 30px;">
+    <img src="https://img.shields.io/badge/BUILT%20WITH-MISTRAL%20AI-F67A32?style=for-the-badge&labelColor=4D4E50" alt="Built with Mistral AI" />
+    <img src="https://img.shields.io/badge/REACT%20%2B%20NODE-APP-DF5746?style=for-the-badge&labelColor=4D4E50" alt="React + Node App" />
   </div>
 
   <img src="frontend/public/logo.png" alt="Strata Logo" width="80" />
